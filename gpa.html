@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon School GPA Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  margin:0; padding:0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  display:flex; justify-content:center; align-items:flex-start;
+  overflow-y:auto; color:#fff;
+}
+.container {
+  width:90%; max-width:700px;
+  margin:40px auto; padding:30px;
+  background: rgba(0,0,0,0.6);
+  border-radius:20px;
+  box-shadow: 0 0 30px #00eaff, 0 0 50px #ff00ff inset;
+  position: relative;
+  backdrop-filter: blur(20px);
+  max-height:90vh; overflow-y:auto;
+}
+h2 {
+  text-align:center; color:#00eaff;
+  font-size:32px; text-shadow:0 0 10px #00eaff;
+}
+label { display:block; margin:12px 0 6px; }
+select, input[type=number] {
+  width:100%; padding:10px; border-radius:8px;
+  border:none; margin-bottom:10px; font-size:16px;
+  background: rgba(0,0,0,0.2); color:#00eaff;
+  box-shadow: 0 0 5px #00eaff, 0 0 10px #ff00ff inset;
+  transition: all 0.3s ease;
+}
+select:focus, input[type=number]:focus {
+  outline:none;
+  box-shadow: 0 0 15px #00ffdd, 0 0 25px #ff00ff inset;
+  animation: glowInput 1.2s ease-in-out infinite alternate;
+}
+@keyframes glowInput {
+  0% { box-shadow: 0 0 10px #00ffdd, 0 0 20px #ff00ff inset; }
+  100% { box-shadow: 0 0 25px #00ffdd, 0 0 40px #ff00ff inset; }
+}
+button {
+  position:relative;
+  overflow:hidden;
+  padding:12px 20px; border:none; border-radius:12px;
+  background: linear-gradient(90deg, #00eaff, #ff00ff);
+  color:#000; font-weight:bold; cursor:pointer; margin-top:10px;
+  box-shadow: 0 0 15px #00eaff, 0 0 25px #ff00ff inset;
+  transition: 0.3s;
+}
+button:hover {
+  transform: scale(1.05) rotateX(8deg) rotateY(8deg);
+  box-shadow: 0 0 35px #00ffdd, 0 0 50px #ff00ff inset, 0 0 20px #ffffffaa;
+}
+button span.ripple {
+  position:absolute;
+  border-radius:50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  background-color: rgba(255,255,255,0.5);
+  pointer-events:none;
+}
+@keyframes ripple {
+  to { transform: scale(4); opacity:0; }
+}
+.subject-row { display:flex; justify-content:space-between; margin-bottom:8px; }
+.subject-row label { flex:1; }
+.subject-row input { flex:1; margin-left:10px; padding:8px; border-radius:6px; background: rgba(0,0,0,0.2); color:#00eaff; border:none; box-shadow: 0 0 5px #00eaff, 0 0 10px #ff00ff inset; transition: all 0.3s ease; }
+#result { text-align:center; margin-top:20px; font-weight:bold; }
+.individual {
+  display:flex; justify-content:space-between;
+  padding:6px 10px;
+  margin:4px 0;
+  border-radius:8px;
+  background: rgba(0,255,221,0.1);
+  color:#00ffdd;
+  font-weight:600;
+  text-shadow: 0 0 6px #00ffdd;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  0% { text-shadow:0 0 6px #002520,0 0 12px #00ffdd; }
+  100% { text-shadow:0 0 12px #179a88,0 0 25px #00ffdd; }
+}
+canvas { margin-top:20px; background: rgba(0,0,0,0.3); border-radius:12px; }
+@media(max-width:600px){
+  .container { padding:20px; margin:20px; }
+  h2 { font-size:26px; }
+  input[type=number] { font-size:14px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>School GPA Calculator</h2>
+<label>Select Class:</label>
+<select id="classSelect" onchange="loadSubjects()">
+  <option value="">-- Select Class --</option>
+  <option value="1-5">Class 1-5</option>
+  <option value="6-10">Class 6-10</option>
+</select>
+<div id="subjects"></div>
+<button onclick="calculateGPA()">Calculate GPA</button>
+<div id="result"></div>
+<canvas id="gpaChart" width="400" height="200"></canvas>
+</div>
+
+<script>
+// SUBJECTS
+const subjects_1_5 = ["Math","English","Bangla","Science","ICT"];
+const subjects_6_10 = ["Math","English","Bangla","Physics","Chemistry","Biology","ICT","History","Geography","Economics"];
+
+let chartInstance = null;
+
+// LOAD SUBJECTS
+function loadSubjects(){
+  const cls = document.getElementById('classSelect').value;
+  const container = document.getElementById('subjects');
+  container.innerHTML = '';
+  if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+
+  let list = [];
+  if(cls === '1-5') list = subjects_1_5;
+  else if(cls === '6-10') list = subjects_6_10;
+  else return;
+
+  list.forEach(sub => {
+    const div = document.createElement('div');
+    div.className = 'subject-row';
+    div.innerHTML = `<label>${sub}</label><input type="number" min="0" max="100" placeholder="0-100">`;
+    container.appendChild(div);
+  });
+}
+
+// GRADE POINT
+function gradePoint(mark){
+  if(mark>=80) return 5.0;
+  if(mark>=70) return 4.0;
+  if(mark>=60) return 3.5;
+  if(mark>=50) return 3.0;
+  if(mark>=40) return 2.0;
+  if(mark>=33) return 1.0;
+  return 0.0;
+}
+
+// GPA COMMENT SYSTEM (FULL RANGE)
+function gpaComment(gpa){
+  gpa = parseFloat(gpa);
+  if(isNaN(gpa)) return "";
+
+  if(gpa === 0) return "😢 You have failed. Try harder next time!";
+
+  // 5.00 → 4.00
+  if(gpa >= 5.00) return "🌟 Outstanding! Absolutely Awesome!";
+  if(gpa >= 4.90) return "🔥 Super Excellent Performance!";
+  if(gpa >= 4.80) return "✨ Brilliant Result! Keep it up!";
+  if(gpa >= 4.70) return "🌈 Very Impressive Work!";
+  if(gpa >= 4.60) return "💎 Great Job!";
+  if(gpa >= 4.50) return "⭐ Very Good!";
+  if(gpa >= 4.40) return "👍 Good Work!";
+  if(gpa >= 4.30) return "🙂 Nice & Clean!";
+  if(gpa >= 4.20) return "✔ Decent Performance!";
+  if(gpa >= 4.10) return "📘 Keep Improving!";
+  if(gpa >= 4.00) return "📗 Pass – Try for Better!";
+
+  // 3.99 → 3.00
+  if(gpa >= 3.90) return "🌤 Almost Good! Keep pushing!";
+  if(gpa >= 3.80) return "🌱 Stable Result!";
+  if(gpa >= 3.70) return "📘 Needs Some Improvement!";
+  if(gpa >= 3.60) return "🙂 Fair!";
+  if(gpa >= 3.50) return "🙂 Average – You can do better!";
+  if(gpa >= 3.40) return "😐 Not bad, but needs focus.";
+  if(gpa >= 3.30) return "📘 Study a bit more.";
+  if(gpa >= 3.20) return "📒 Weak but passable.";
+  if(gpa >= 3.10) return "📙 Need more practice.";
+  if(gpa >= 3.00) return "📕 Barely acceptable.";
+
+  // 2.99 → 2.00
+  if(gpa >= 2.90) return "⚠ Needs strong improvement!";
+  if(gpa >= 2.80) return "⚠ Try harder!";
+  if(gpa >= 2.70) return "🚧 Weak performance.";
+  if(gpa >= 2.60) return "🚧 Needs more attention.";
+  if(gpa >= 2.50) return "🚨 Very weak.";
+  if(gpa >= 2.40) return "🚨 Poor – Must improve.";
+  if(gpa >= 2.30) return "⛔ Not good at all.";
+  if(gpa >= 2.20) return "⛔ Study seriously!";
+  if(gpa >= 2.10) return "⛔ Very low score.";
+  if(gpa >= 2.00) return "⛔ Too weak.";
+
+  // 1.99 → 1.00
+  if(gpa >= 1.90) return "⚠ Borderline pass.";
+  if(gpa >= 1.80) return "⚠ Very low performance.";
+  if(gpa >= 1.70) return "😟 Needs massive improvement.";
+  if(gpa >= 1.60) return "😟 Barely touched the pass mark.";
+  if(gpa >= 1.50) return "😟 Very weak.";
+  if(gpa >= 1.40) return "😓 Improve as soon as possible.";
+  if(gpa >= 1.30) return "😓 Too low.";
+  if(gpa >= 1.20) return "😫 Almost fail.";
+  if(gpa >= 1.10) return "😫 Very poor.";
+  if(gpa >= 1.00) return "😫 Lowest pass margin.";
+
+  return "❌ Very Poor – You are below pass standard.";
+}
+
+// CALCULATE GPA
+function calculateGPA(){
+  const rows = document.querySelectorAll('#subjects .subject-row');
+  if(rows.length === 0){ alert('Select a class first'); return; }
+
+  let total = 0; let fail = false;
+  let individualHTML = '';
+  const labels = []; const data = [];
+
+  for(let r of rows){
+    const val = r.querySelector('input').value;
+    if(val === '') { alert('Fill all marks'); return; }
+    const m = parseFloat(val);
+    if(m<0 || m>100){ alert('Marks must be 0-100'); return; }
+    if(m<33) fail = true;
+
+    const gpaVal = gradePoint(m);
+    total += gpaVal;
+
+    individualHTML += `<div class="individual"><span>${r.querySelector('label').innerText}</span><span>GPA: ${gpaVal}</span></div>`;
+
+    labels.push(r.querySelector('label').innerText);
+    data.push(gpaVal);
+  }
+
+  const gpa = fail ? 0 : (total / rows.length).toFixed(2);
+  const comment = gpaComment(gpa);
+
+  document.getElementById('result').innerHTML =
+    `<div style="font-size:28px; color:#ff00ff; text-shadow:0 0 10px #ff00ff; animation: glow 1.5s ease-in-out infinite alternate;">
+        Total GPA: ${gpa}
+     </div>
+     <div style="margin-top:10px; font-size:22px; color:#00ffdd; text-shadow:0 0 8px #00ffdd;">
+        Comment: ${comment}
+     </div>`
+    + individualHTML;
+
+  // CHART
+  const ctx = document.getElementById('gpaChart').getContext('2d');
+  if(chartInstance){ chartInstance.destroy(); }
+
+  chartInstance = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: labels,
+      datasets:[{
+        label:'GPA',
+        data:data,
+        backgroundColor: 'rgba(0,255,221,0.7)',
+        borderColor: 'rgba(0,255,221,1)',
+        borderWidth:2,
+        hoverBackgroundColor: 'rgba(255,0,255,0.8)'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      animation:{
+        duration:1500,
+        easing:'easeOutBounce',
+        onProgress: function(){
+          const dataset = this.data.datasets[0];
+          dataset.backgroundColor = dataset.data.map((v,i)=>{
+            const glow = 0.4 + 0.3*Math.sin(Date.now()/200 + i);
+            return `rgba(0,255,221,${glow})`;
+          });
+        }
+      },
+      scales:{
+        y:{beginAtZero:true, max:5, grid:{color:'rgba(0,255,221,0.2)'}},
+        x:{grid:{color:'rgba(0,255,221,0.2)'}}
+      }
+    }
+  });
+}
+
+// PARTICLES
+for(let i=0;i<30;i++){
+  const p = document.createElement('div');
+  p.className='particle';
+  p.style.width=p.style.height=Math.random()*6+4+'px';
+  p.style.top=Math.random()*100+'%';
+  p.style.left=Math.random()*100+'%';
+  p.style.animationDuration=10+Math.random()*10+'s';
+  document.body.appendChild(p);
+}
+
+document.body.addEventListener('mousemove', function(e){
+  document.querySelectorAll('.particle').forEach(p=>{
+    const dx = (e.clientX - window.innerWidth/2)/50;
+    const dy = (e.clientY - window.innerHeight/2)/50;
+    p.style.transform = `translate(${dx}px, ${dy}px)`;
+  });
+});
+
+// BUTTON RIPPLE
+document.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click', function(e){
+    const circle = document.createElement('span');
+    circle.className='ripple';
+    this.appendChild(circle);
+    const d = Math.max(this.clientWidth, this.clientHeight);
+    circle.style.width = circle.style.height = d+'px';
+
+    const rect = this.getBoundingClientRect();
+    circle.style.left = e.clientX - rect.left - d/2 + 'px';
+    circle.style.top = e.clientY - rect.top - d/2 + 'px';
+
+    circle.addEventListener('animationend',()=> circle.remove());
+  });
+});
+</script>
+
+</body>
+</html>

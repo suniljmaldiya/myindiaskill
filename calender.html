@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Calendar 2025 - Green Valley High School</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+  overflow-x: hidden;
+  position: relative;
+}
+.calendar-wrapper {
+  max-width: 950px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgba(0,0,0,0.45);
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(0,255,255,0.3);
+  position: relative;
+  z-index: 2;
+}
+.nav-buttons {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.nav-buttons button {
+  padding: 10px 20px;
+  margin: 5px;
+  background: linear-gradient(45deg,#00ffff,#ff00ff,#00ff88);
+  border: none;
+  border-radius: 12px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0,255,255,0.4);
+  transition: all 0.3s ease;
+}
+.nav-buttons button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(0,255,255,0.7), 0 0 50px rgba(255,0,255,0.5);
+}
+.month-title {
+  font-size: 38px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg,#00e1ff,#ff00ff,#00ff88,#ff0055);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  color: transparent;
+  animation: neonPulse 3s infinite alternate;
+  text-shadow: 0 0 15px rgba(0,230,255,0.5);
+}
+@keyframes neonPulse {
+  0% { text-shadow: 0 0 8px #00e1ff,0 0 15px #ff00ff; }
+  50% { text-shadow: 0 0 20px #00ff88,0 0 25px #ff0055; }
+  100% { text-shadow: 0 0 8px #00e1ff,0 0 15px #ff00ff; }
+}
+.calendar {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 35px rgba(0,255,255,0.3), 0 0 60px rgba(255,0,255,0.15) inset;
+}
+.calendar th, .calendar td {
+  padding: 15px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+  position: relative;
+}
+.calendar th {
+  background: rgba(0,255,255,0.2);
+  color: #fff;
+  font-weight: 700;
+}
+.calendar td:hover {
+  transform: scale(1.15);
+  z-index: 5;
+}
+.calendar td:hover::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0,230,255,0.6);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  animation: particlePop 0.5s forwards;
+}
+@keyframes particlePop {
+  0% { transform: translate(-50%,-50%) scale(0); opacity: 0.8; }
+  50% { transform: translate(-50%,-50%) scale(1.2); opacity: 0.6; }
+  100% { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+}
+.holiday {
+  color: #ff4444;
+  font-weight: 700;
+  animation: holidayGlow 2s infinite alternate;
+}
+.holiday.weekend {
+  color: #ffcc00;
+  font-weight: 600;
+  animation: weekendGlow 2.5s infinite alternate;
+}
+@keyframes holidayGlow {
+  0% { text-shadow: 0 0 8px #ff4444, 0 0 15px #ff8800; }
+  50% { text-shadow: 0 0 20px #ff4444, 0 0 25px #ffcc00; }
+  100% { text-shadow: 0 0 8px #ff4444, 0 0 15px #ff8800; }
+}
+@keyframes weekendGlow {
+  0% { text-shadow: 0 0 8px #ffaa00, 0 0 15px #ffd700; }
+  50% { text-shadow: 0 0 20px #ffaa00, 0 0 25px #ffe066; }
+  100% { text-shadow: 0 0 8px #ffaa00, 0 0 15px #ffd700; }
+}
+.calendar td.holiday:hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: tooltipFade 0.25s forwards;
+  z-index: 10;
+}
+@keyframes tooltipFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10,10,10,0.9);
+  padding: 25px 35px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 18px;
+  box-shadow:
+    0 0 25px #00e1ff,
+    0 0 50px #ff00ff,
+    0 0 80px #00ffd5 inset;
+  z-index: 1000;
+  text-align: center;
+}
+#popup button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(45deg,#00ffff,#ff00ff,#00ff88);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(0,255,255,0.4);
+  transition: all 0.3s ease;
+}
+#popup button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(0,255,255,0.7), 0 0 50px rgba(255,0,255,0.5);
+}
+.summary-box {
+  margin-top: 15px;
+  font-size: 16px;
+  text-align: center;
+  color: #00ffff;
+  text-shadow: 0 0 8px #00ffff;
+}
+@keyframes slideInRight { from {opacity:0; transform:translateX(50px);} to {opacity:1; transform:translateX(0);} }
+@keyframes slideInLeft { from {opacity:0; transform:translateX(-50px);} to {opacity:1; transform:translateX(0);} }
+.slide-right { animation: slideInRight 0.5s ease; }
+.slide-left { animation: slideInLeft 0.5s ease; }
+.particles span {
+  position: absolute;
+  display: block;
+  width: 10px; height: 10px;
+  background: rgba(0,255,255,0.3);
+  border-radius: 50%;
+  animation: float 6s linear infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0) rotate(0deg);}
+  100% { transform: translateY(-800px) rotate(360deg);}
+}
+</style>
+</head>
+<body>
+
+    
+<header>
+      <div class="nav-buttons">
+  <h1>Academic Calender of Green Vallby High School</h1>
+      </div>
+</header>
+
+<div class="calendar-wrapper">
+  <div class="nav-buttons">
+    <button onclick="prevMonth()">❮ Prev</button>
+    <button onclick="nextMonth()">Next ❯</button>
+  </div>
+
+  <div id="calendar-container"></div>
+  <div class="summary-box" id="summary-box"></div>
+</div>
+
+<div id="popup">
+  <div id="popup-text"></div>
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<div class="particles"></div>
+
+<script>
+const holidays = {
+  "2025-01-01":"New Year's Day",
+  "2025-01-28":"Shab-e-Meraj",
+  "2025-02-14":"Shab-e-Barat",
+  "2025-02-21":"Shaheed Day / International Mother Language Day",
+  "2025-03-26":"Independence Day",
+  "2025-04-14":"Pohela Baishakh",
+  "2025-03-31":"Eid-ul-Fitr",
+  "2025-04-01":"Eid-ul-Fitr Holiday",
+  "2025-06-05":"Eid-ul-Adha Start",
+  "2025-06-06":"Eid-ul-Adha",
+  "2025-06-07":"Eid-ul-Adha Holiday",
+  "2025-06-08":"Eid-ul-Adha Holiday",
+  "2025-06-09":"Eid-ul-Adha Holiday",
+  "2025-05-01":"May Day",
+  "2025-05-14":"Buddha Purnima",
+  "2025-12-16":"Victory Day",
+  "2025-12-25":"Christmas Day"
+};
+
+const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+let currentMonth = 0;
+
+function generateCalendar(monthIndex){
+  let year = 2025;
+  let first = new Date(year, monthIndex, 1).getDay();
+  let total = new Date(year, monthIndex + 1, 0).getDate();
+  let html = `<div class='month-title'>${monthNames[monthIndex]} ${year}</div>`;
+  html += `<table class='calendar'><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr><tr>`;
+  
+  let holidayCount = 0;
+  for (let i = 0; i < first; i++) html += "<td></td>";
+  for (let d = 1; d <= total; d++) {
+    let fullDate = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    let dt = new Date(year, monthIndex, d);
+    let wd = dt.getDay();
+    let isHolidayClass = "";
+    let tooltipText = "";
+
+    if (holidays[fullDate]) {
+      isHolidayClass = "holiday";
+      tooltipText = holidays[fullDate];
+      holidayCount++;
+    } else if (wd === 5 || wd === 6) {
+      isHolidayClass = "holiday weekend";
+      tooltipText = "Weekend Holiday";
+      holidayCount++;
+    }
+
+    html += `<td class='${isHolidayClass}' data-tooltip="${tooltipText}" onclick="showPopup('${fullDate} : ${tooltipText}')">${d}</td>`;
+    if ((d + first) % 7 === 0) html += "</tr><tr>";
+  }
+
+  html += "</tr></table>";
+  document.getElementById("summary-box").innerHTML = `Holidays this month: ${holidayCount}, Total Days: ${total}`;
+  return html;
+}
+
+function showMonth(m, direction = "right"){
+  currentMonth = m;
+  const container = document.getElementById("calendar-container");
+  container.innerHTML = generateCalendar(m);
+  container.classList.remove("slide-left","slide-right");
+  void container.offsetWidth;
+  container.classList.add(direction === "left" ? "slide-left" : "slide-right");
+}
+function nextMonth(){ let m = (currentMonth + 1) % 12; showMonth(m, "right"); }
+function prevMonth(){ let m = (currentMonth + 11) % 12; showMonth(m, "left"); }
+
+function showPopup(text){
+  document.getElementById("popup-text").innerText = text;
+  document.getElementById("popup").style.display = "block";
+}
+function closePopup(){
+  document.getElementById("popup").style.display = "none";
+}
+
+const particlesContainer = document.querySelector(".particles");
+for(let i=0;i<30;i++){
+  const span = document.createElement("span");
+  span.style.left = Math.random()*100+"%";
+  span.style.top = Math.random()*100+"%";
+  span.style.width = span.style.height = (5 + Math.random()*10)+"px";
+  span.style.animationDuration = (3 + Math.random()*5)+"s";
+  particlesContainer.appendChild(span);
+}
+
+showMonth(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Add Faculty</title>
+<style>
+body { font-family: Arial, sans-serif; background:#f0f2f5; padding:20px; }
+h1 { text-align:center; color:#4CAF50; }
+form { background:white; padding:20px; max-width:600px; margin:auto; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.1); }
+label { display:block; margin-top:10px; font-weight:bold; }
+input, select { width:100%; padding:8px; margin-top:5px; border:1px solid #ccc; border-radius:4px; }
+button { margin-top:15px; padding:10px 20px; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; }
+button:hover { background:#45a049; }
+p.success { color:green; text-align:center; font-weight:bold; }
+p.error { color:red; text-align:center; font-weight:bold; }
+#logoutBtn { display:block; margin:20px auto; background:#f44336; }
+#logoutBtn:hover { background:#d32f2f; }
+</style>
+</head>
+<body>
+
+<h1>Admin Panel</h1>
+
+<!-- 🔐 LOGIN SECTION -->
+<div id="loginSection">
+  <form id="loginForm">
+    <label>Admin ID:</label>
+    <input type="text" id="adminId" required>
+
+    <label>Password:</label>
+    <input type="password" id="adminPass" required>
+
+    <button type="submit">Login</button>
+  </form>
+  <p id="loginMsg"></p>
+</div>
+
+<!-- 🧾 FACULTY FORM SECTION (hidden by default) -->
+<div id="facultySection" style="display:none;">
+  <form id="facultyForm">
+    <h2>Add New Faculty</h2>
+
+    <label>Name:</label>
+    <input type="text" id="name" required>
+
+    <label>Subject:</label>
+    <input type="text" id="subject" required>
+
+    <label>SSC School:</label>
+    <input type="text" id="sscSchool" required>
+
+    <label>HSC College:</label>
+    <input type="text" id="hscCollege" required>
+
+    <label>Honours Subject:</label>
+    <input type="text" id="honoursSubject" required>
+
+    <label>Masters Subject:</label>
+    <input type="text" id="mastersSubject" required>
+
+    <label>University:</label>
+    <input type="text" id="university" required>
+
+    <label>Blood Group:</label>
+    <input type="text" id="bloodGroup" required>
+
+    <label>Contact Number:</label>
+    <input type="text" id="contact" required>
+
+    <label>Location (City):</label>
+    <input type="text" id="location" required>
+
+    <label>Experience:</label>
+    <input type="text" id="experience" required>
+
+    <label>Project:</label>
+    <input type="text" id="project" required>
+
+    <label>Photo URL (optional):</label>
+    <input type="text" id="img" placeholder="e.g., faculty1.jpg">
+
+    <button type="submit">Add Faculty</button>
+  </form>
+
+  <button id="logoutBtn">Logout</button>
+  <p class="success" id="message"></p>
+</div>
+
+<script>
+// ✅ Set your admin credentials here
+const ADMIN_ID = "admin";
+const ADMIN_PASS = "1234";  // <-- Change this password as you like
+
+const loginSection = document.getElementById('loginSection');
+const facultySection = document.getElementById('facultySection');
+const loginForm = document.getElementById('loginForm');
+const loginMsg = document.getElementById('loginMsg');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Check login status on load
+if(localStorage.getItem('isAdminLoggedIn') === 'true'){
+  loginSection.style.display = 'none';
+  facultySection.style.display = 'block';
+}
+
+// ✅ Handle login
+loginForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  const id = document.getElementById('adminId').value;
+  const pass = document.getElementById('adminPass').value;
+
+  if(id === ADMIN_ID && pass === ADMIN_PASS){
+    localStorage.setItem('isAdminLoggedIn', 'true');
+    loginSection.style.display = 'none';
+    facultySection.style.display = 'block';
+  } else {
+    loginMsg.textContent = "❌ Invalid ID or Password!";
+    loginMsg.className = "error";
+  }
+});
+
+// ✅ Logout button
+logoutBtn.addEventListener('click', ()=>{
+  localStorage.removeItem('isAdminLoggedIn');
+  facultySection.style.display = 'none';
+  loginSection.style.display = 'block';
+});
+
+// ✅ Faculty Form Submission
+document.getElementById('facultyForm').addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const newFaculty = {
+    name: document.getElementById('name').value,
+    subject: document.getElementById('subject').value,
+    sscSchool: document.getElementById('sscSchool').value,
+    hscCollege: document.getElementById('hscCollege').value,
+    honoursSubject: document.getElementById('honoursSubject').value,
+    mastersSubject: document.getElementById('mastersSubject').value,
+    university: document.getElementById('university').value,
+    bloodGroup: document.getElementById('bloodGroup').value,
+    contact: document.getElementById('contact').value,
+    location: document.getElementById('location').value,
+    experience: document.getElementById('experience').value,
+    project: document.getElementById('project').value,
+    img: document.getElementById('img').value || 'faculty1.jpg'
+  };
+
+  // Save to localStorage
+  const existing = JSON.parse(localStorage.getItem('manualFaculty')) || [];
+  existing.push(newFaculty);
+  localStorage.setItem('manualFaculty', JSON.stringify(existing));
+
+  document.getElementById('message').textContent = "✅ Faculty member added successfully!";
+  this.reset();
+});
+</script>
+</body>
+</html>
